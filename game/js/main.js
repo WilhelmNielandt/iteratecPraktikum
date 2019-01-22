@@ -37,13 +37,17 @@ PlayState.preload = function () {
     this.game.load.image('grass:1x1', 'images/grass_1x1.png');
     //sfx
     this.game.load.audio('sfx:jump', 'audio/jump.wav');
+    this.game.load.audio('sfx:coin', 'audio/coin.wav');
+    //Coin spritesheet
+    this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
 };
 
 // create game entities and set up world here
 PlayState.create = function () {
     //Objekt für sfx
     this.sfx = {
-        jump: this.game.add.audio('sfx:jump')
+        jump: this.game.add.audio('sfx:jump'),
+        coin: this.game.add.audio('sfx:coin')
     };
     //Hintergrund
     this.game.add.image(0, 0, 'background');
@@ -55,10 +59,13 @@ PlayState.create = function () {
 PlayState._loadLevel = function (data) {
     // Gruppen
     this.platforms = this.game.add.group();
-    // Hero spawnen
-	this._spawnCharacters({hero: data.hero});
+    this.coins = this.game.add.group();
+    //  spawnen
+    this._spawnCharacters({hero: data.hero, spiders: data.spiders});
 	//alle Plattformen spawnen
 	data.platforms.forEach(this._spawnPlatform, this);
+	//Coins
+    data.coins.forEach(this._spawnCoin, this);
     //Schwerkraft
     const GRAVITY = 1200;
     this.game.physics.arcade.gravity.y = GRAVITY;
@@ -125,6 +132,9 @@ PlayState._handleInput = function () {
 };
 PlayState._handleCollisions = function () {
     this.game.physics.arcade.collide(this.hero, this.platforms);
+    //
+    this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoin,
+        null, this);
 };
 
 Hero.prototype.jump = function(){
@@ -136,3 +146,17 @@ Hero.prototype.jump = function(){
     }
     return canJump;
 };
+PlayState._spawnCoin = function (coin) {
+    let sprite = this.coins.create(coin.x, coin.y, 'coin');
+    sprite.anchor.set(0.5, 0.5);
+    //Animation
+    sprite.animations.add('rotate', [0, 1, 2, 1], 6, true);
+    sprite.animations.play('rotate');
+    //
+    this.game.physics.enable(sprite);
+    sprite.body.allowGravity = false;
+};
+PlayState._onHeroVsCoin = function (her, coin) {
+    this.sfx.coin.play();
+    coin.kill();
+}
