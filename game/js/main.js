@@ -60,3 +60,30 @@ PlayState._spawnPlatform = function (platform) {
     this.game.add.sprite(platform.x, platform.y, platform.image);
 };
 
+PlayState.init = function () {
+    //Tastatur input
+    this.keys = this.game.input.keyboard.addKeys({
+        left: Phaser.KeyCode.LEFT,
+        right: Phaser.KeyCode.RIGHT
+    });
+    //
+    this.game.renderer.renderSession.roundPixels = true;
+};
+
+Hero.prototype.move = function (direction) {
+    this.x += direction * 2.5; //bewegt sich 2,5 Pixel pro frame
+};
+PlayState.update = function (){
+    this._handleInput();
+};
+
+PlayState._handleInput = function () {
+    //wenn linke Pfeiltaste gedrückt ist, bewegt er sich nach links
+    if (this.keys.left.isDown){
+        this.hero.move(-1);
+    }
+    //wenn rechte Pfeiltaste gedrückt ist, bewegt er sich nach rechts
+    else if (this.keys.right.isDown){
+        this.hero.move(1);
+    }
+};
