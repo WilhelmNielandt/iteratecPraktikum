@@ -47,12 +47,17 @@ PlayState.create = function () {
 };
 
 PlayState._loadLevel = function (data) {
-	// Hero spawnen
+    // Gruppen
+    this.platforms = this.game.add.group();
+    // Hero spawnen
 	this._spawnCharacters({hero: data.hero});
 	//alle Plattformen spawnen
 	data.platforms.forEach(this._spawnPlatform, this);
-};
+    //Schwerkraft
+    const GRAVITY = 1200;
+    this.game.physics.arcade.gravity.y = GRAVITY;
 
+};
 
 window.onload = function () {
     let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
@@ -62,6 +67,11 @@ window.onload = function () {
 
 PlayState._spawnPlatform = function (platform) {
     this.game.add.sprite(platform.x, platform.y, platform.image);
+    let sprite = this.platforms.create(
+        platform.x, platform.y, platform.image);
+    this.game.physics.enable(sprite);
+    sprite.body.allowGravity = false;
+    sprite.body.immovable = true;
 };
 
 PlayState.init = function () {
@@ -81,6 +91,7 @@ Hero.prototype.move = function (direction) {
     this.body.velocity.x = direction * SPEED;
 };
 PlayState.update = function (){
+    this._handleCollisions();
     this._handleInput();
 };
 
@@ -97,4 +108,7 @@ PlayState._handleInput = function () {
     else{
         this.hero.move(0);
     }
+};
+PlayState._handleCollisions = function () {
+    this.game.physics.arcade.collide(this.hero, this.platforms);
 };
