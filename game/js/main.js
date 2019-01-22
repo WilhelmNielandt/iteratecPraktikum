@@ -12,6 +12,10 @@ function Hero(game, x, y) {
     Phaser.Sprite.call(this, game, x, y, 'hero');
 	//hero positionieren
 	this.anchor.set(0.5, 0.5);
+	//Engine
+    this.game.physics.enable(this);
+    //nicht weiter als Rand
+    this.body.collideWorldBounds = true;
 }
 Hero.prototype = Object.create(Phaser.Sprite.prototype);
 Hero.prototype.constructor = Hero;
@@ -72,6 +76,9 @@ PlayState.init = function () {
 
 Hero.prototype.move = function (direction) {
     this.x += direction * 2.5; //bewegt sich 2,5 Pixel pro frame
+    //
+    const SPEED = 200;
+    this.body.velocity.x = direction * SPEED;
 };
 PlayState.update = function (){
     this._handleInput();
@@ -85,5 +92,9 @@ PlayState._handleInput = function () {
     //wenn rechte Pfeiltaste gedrückt ist, bewegt er sich nach rechts
     else if (this.keys.right.isDown){
         this.hero.move(1);
+    }
+    //sonst nicht bewegen
+    else{
+        this.hero.move(0);
     }
 };
