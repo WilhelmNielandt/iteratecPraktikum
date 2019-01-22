@@ -44,6 +44,8 @@ PlayState.preload = function () {
     //sfx
     this.game.load.audio('sfx:jump', 'audio/jump.wav');
     this.game.load.audio('sfx:coin', 'audio/coin.wav');
+    this.game.load.audio('sfx:stomp', 'audio/stomp.wav');
+
     //Coin spritesheet
     this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
     //Spinnen spritesheet
@@ -57,7 +59,8 @@ PlayState.create = function () {
     //Objekt für sfx
     this.sfx = {
         jump: this.game.add.audio('sfx:jump'),
-        coin: this.game.add.audio('sfx:coin')
+        coin: this.game.add.audio('sfx:coin'),
+        stomp: this.game.add.audio('sfx:stomp')
     };
     //Hintergrund
     this.game.add.image(0, 0, 'background');
@@ -155,6 +158,9 @@ PlayState._handleCollisions = function () {
     //
     this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoin,
         null, this);
+    //
+    this.game.physics.arcade.overlap(this.hero, this.spiders,
+        this._onHeroVsEnemy, null, this);
 };
 
 Hero.prototype.jump = function(){
@@ -218,4 +224,26 @@ PlayState._spawnEnemyWall = function (x, y, side) {
     this.game.physics.enable(sprite);
     sprite.body.immovable = true;
     sprite.body.allowGravity = false;
+};
+PlayState._onHeroVsEnemy = function (hero, enemy)  {
+    if(hero.body.velocity.y > 0){
+        hero.bounce();
+        enemy.die();
+        this.sfx.stomp.play();
+    }
+    else{
+        this.sfx.stomp.play();
+        this.game.state.restart();
+    }
+
+};
+Hero.prototype.bounce = function () {
+    const BOUNCE_SPEED = 200;
+    this.body.velocity.y = -BOUNCE_SPEED;
+};
+Spider.prototype.die = function () {
+    this.body.enable = false;
+    this.animations.play('die').onComplete.addOnce(function () {
+        this.kill();
+    }, this);
 };
