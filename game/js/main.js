@@ -33,6 +33,8 @@ Hero.prototype.constructor = Hero;
 
 //load game assets here
 PlayState.preload = function () {
+    //Level
+    this.game.load.json('level:0', 'data/level00.json');
 	// main character laden
     this.game.load.spritesheet('hero', 'images/hero.png', 36, 42);
 	//
@@ -81,7 +83,7 @@ PlayState.create = function () {
     //Hintergrund
     this.game.add.image(0, 0, 'background');
     //
-	this._loadLevel(this.game.cache.getJSON('level:1'));
+    this._loadLevel(this.game.cache.getJSON(`level:${this.level}`));
 	//Hud
     this._createHud();
 };
@@ -113,7 +115,7 @@ PlayState._loadLevel = function (data) {
 window.onload = function () {
     let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
     game.state.add('play', PlayState);
-    game.state.start('play');
+    game.state.start('play', true, false, {level: 0});
 };
 
 PlayState._spawnPlatform = function (platform) {
@@ -126,8 +128,10 @@ PlayState._spawnPlatform = function (platform) {
     this._spawnEnemyWall(platform.x, platform.y, 'left');
     this._spawnEnemyWall(platform.x + sprite.width, platform.y, 'right');
 };
+//Levelcounter
+const LEVEL_COUNT = 2;
 
-PlayState.init = function () {
+PlayState.init = function (data) {
     //Tastatur input
     this.keys = this.game.input.keyboard.addKeys({
         left: Phaser.KeyCode.LEFT,
@@ -144,6 +148,7 @@ PlayState.init = function () {
     }, this);
 this.coinPickupCount = 0;
 this.hasKey = false;
+this.level = (data.level || 0) % LEVEL_COUNT;
 };
 
 Hero.prototype.move = function (direction) {
@@ -275,7 +280,7 @@ PlayState._onHeroVsEnemy = function (hero, enemy)  {
     }
     else{
         this.sfx.stomp.play();
-        this.game.state.restart();
+        this.game.state.restart(true, false, {level: this.level});
     }
 
 };
@@ -351,5 +356,5 @@ PlayState._onHeroVsKey = function (hero, key) {
 };
 PlayState._onHeroVsDoor = function (hero, door) {
     this.sfx.door.play();
-    this.game.state.restart();
+    this.game.state.restart(true, false, { level: this.level + 1 });
 };
