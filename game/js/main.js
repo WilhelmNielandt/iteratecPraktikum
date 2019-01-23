@@ -22,6 +22,11 @@ function Hero(game, x, y) {
     this.game.physics.enable(this);
     //nicht weiter als Rand
     this.body.collideWorldBounds = true;
+    //Animationen
+    this.animations.add('stop', [0]);
+    this.animations.add('run', [1, 2], 8, true);
+    this.animations.add('jump', [3]);
+    this.animations.add('fall', [4]);
 }
 Hero.prototype = Object.create(Phaser.Sprite.prototype);
 Hero.prototype.constructor = Hero;
@@ -29,7 +34,7 @@ Hero.prototype.constructor = Hero;
 //load game assets here
 PlayState.preload = function () {
 	// main character laden
-	this.game.load.image('hero', 'images/hero_stopped.png');
+    this.game.load.spritesheet('hero', 'images/hero.png', 36, 42);
 	//
     this.game.load.image('background', 'images/background.png');
     //
@@ -131,6 +136,13 @@ Hero.prototype.move = function (direction) {
     //
     const SPEED = 200;
     this.body.velocity.x = direction * SPEED;
+    //
+    if(this.body.velocity.x < 0){
+        this.scale.x = -1;
+    }
+    else if(this.body.velocity.x > 0){
+        this.scale.x = 1;
+    }
 };
 PlayState.update = function (){
     this._handleCollisions();
@@ -268,4 +280,26 @@ PlayState._createHud = function () {
     this.hud.add(coinIcon);
     this.hud.add(coinScoreImg);
     this.hud.position.set(10, 10);
+};
+Hero.prototype._getAnimationName = function(){
+    let name = 'stop';
+    //springen
+    if(this.body.velocity.y < 0){
+        name = 'jump';
+    }
+    //fallen
+    else if(this.body.velocity.y >= 0 && !this.body.touching.down){
+        name = 'fall';
+    }
+    //rennen
+    else if(this.body.velocity.x !== 0 && this.body.touching.down){
+        name = 'run';
+    }
+    return name;
+};
+Hero.prototype.update = function(){
+    let animationName = this._getAnimationName();
+    if(this.animations.name !== animationName){
+        this.animations.play(animationName);
+    }
 };
