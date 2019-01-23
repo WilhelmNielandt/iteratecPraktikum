@@ -52,6 +52,9 @@ PlayState.preload = function () {
     this.game.load.spritesheet('spider', 'images/spider.png', 42, 32);
     //unsichtbare Wände
     this.game.load.image('invisible-wall', 'images/invisible_wall.png');
+    //Coins
+    this.game.load.image('icon:coin', 'images/coin_icon.png');
+    this.game.load.image('font:numbers', 'images/numbers.png');
 };
 
 // create game entities and set up world here
@@ -66,7 +69,8 @@ PlayState.create = function () {
     this.game.add.image(0, 0, 'background');
     //
 	this._loadLevel(this.game.cache.getJSON('level:1'));
-
+	//Hud
+    this._createHud();
 };
 
 PlayState._loadLevel = function (data) {
@@ -119,7 +123,7 @@ PlayState.init = function () {
             this.sfx.jump.play();
         }
     }, this);
-
+this.coinPickupCount = 0;
 };
 
 Hero.prototype.move = function (direction) {
@@ -131,6 +135,7 @@ Hero.prototype.move = function (direction) {
 PlayState.update = function (){
     this._handleCollisions();
     this._handleInput();
+    this.coinFont.text = `x${this.coinPickupCount}`;
 };
 
 PlayState._handleInput = function () {
@@ -182,10 +187,11 @@ PlayState._spawnCoin = function (coin) {
     this.game.physics.enable(sprite);
     sprite.body.allowGravity = false;
 };
-PlayState._onHeroVsCoin = function (her, coin) {
+PlayState._onHeroVsCoin = function (hero, coin) {
     this.sfx.coin.play();
     coin.kill();
-}
+    this.coinPickupCount++;
+};
 function Spider(game, x, y) {
     Phaser.Sprite.call(this, game, x, y, 'spider');
     // anchor
@@ -246,4 +252,20 @@ Spider.prototype.die = function () {
     this.animations.play('die').onComplete.addOnce(function () {
         this.kill();
     }, this);
+};
+PlayState._createHud = function () {
+    const NUMBERS_STR = '0123456789X ';
+    console.log(this.coinFont);
+    this.coinFont = this.game.add.retroFont('font:numbers', 20, 26,
+        NUMBERS_STR, 6);
+    let coinIcon = this.game.make.image(0, 0, 'icon:coin');
+    //
+    let coinScoreImg = this.game.make.image(coinIcon.x + coinIcon.width,
+        coinIcon.height / 2, this.coinFont);
+    coinScoreImg.anchor.set(0, 0.5);
+    //
+    this.hud = this.game.add.group();
+    this.hud.add(coinIcon);
+    this.hud.add(coinScoreImg);
+    this.hud.position.set(10, 10);
 };
