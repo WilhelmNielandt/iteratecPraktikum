@@ -35,12 +35,14 @@ Hero.prototype.constructor = Hero;
 PlayState.preload = function () {
     //Level
     this.game.load.json('level:0', 'data/level00.json');
+    this.game.load.json('level:1', 'data/level01.json');
+    this.game.load.json('level:2', 'data/level02.json');
+    this.game.load.json('level:3', 'data/level03.json');
 	// main character laden
     this.game.load.spritesheet('hero', 'images/hero.png', 36, 42);
 	//
     this.game.load.image('background', 'images/background.png');
-    //
-	this.game.load.json('level:1', 'data/level01.json');
+
     //Bilder für Plattformen laden
 	this.game.load.image('ground', 'images/ground.png');
     this.game.load.image('grass:8x1', 'images/grass_8x1.png');
@@ -115,7 +117,7 @@ PlayState._loadLevel = function (data) {
 window.onload = function () {
     let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
     game.state.add('play', PlayState);
-    game.state.start('play', true, false, {level: 0});
+    game.state.start('play', true, false, {level: 3});
 };
 
 PlayState._spawnPlatform = function (platform) {
@@ -129,7 +131,7 @@ PlayState._spawnPlatform = function (platform) {
     this._spawnEnemyWall(platform.x + sprite.width, platform.y, 'right');
 };
 //Levelcounter
-const LEVEL_COUNT = 2;
+const LEVEL_COUNT = 4;
 
 PlayState.init = function (data) {
     //Tastatur input
@@ -247,7 +249,7 @@ function Spider(game, x, y) {
     this.body.collideWorldBounds = true;
     this.body.velocity.x = Spider.SPEED;
 }
-Spider.SPEED = 100;
+Spider.SPEED = 200;
 //
 Spider.prototype = Object.create(Phaser.Sprite.prototype);
 Spider.prototype.constructor = Spider;
